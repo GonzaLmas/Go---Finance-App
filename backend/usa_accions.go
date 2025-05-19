@@ -8,29 +8,26 @@ import (
 	"net/http"
 )
 
-func ArgAccions() {
-	// 1. Lista de símbolos que nos interesan (definida en código)
-	favsArgAccions := []string{"GGAL", "LOMA", "PAMP", "YPFD"}
+func UsaAccions() {
+	favsAccions := []string{"AAPL", "GOOGL", "MELI", "META", "QQQ", "SPY"}
 
-	// 2. Obtener todos los datos de la API externa
-	accions, err := getArgAccionsExtApi()
+	accions, err := getUsaAccionsExtApi()
 	if err != nil {
-		log.Fatal("Error obteniendo datos de la API:", err)
+		log.Fatal("Error obteniendo datos de la API: ", err)
 	}
 
-	// 3. Filtrar las acciones que nos interesan
-	filterAccions := filterArgAccions(accions, favsArgAccions)
+	filterAccions := filterUsaAccions(accions, favsAccions)
 
-	// 4. Mostrar resultados en consola
-	fmt.Println("=== ACCIONES ===")
+	fmt.Println("=== USA ACCIONS ===")
 	for _, accion := range filterAccions {
 		fmt.Printf("%-6s $%.2f\n", accion.Symbol, accion.LastPrice)
 	}
+
 	fmt.Printf("\nTotal: %d acciones\n", len(filterAccions))
 }
 
-func getArgAccionsExtApi() ([]model.Symbol, error) {
-	resp, err := http.Get("https://data912.com/live/arg_stocks")
+func getUsaAccionsExtApi() ([]model.Symbol, error) {
+	resp, err := http.Get("https://data912.com/live/usa_stocks")
 	if err != nil {
 		return nil, fmt.Errorf("error al conectar con la API: %w", err)
 	}
@@ -44,16 +41,14 @@ func getArgAccionsExtApi() ([]model.Symbol, error) {
 	return accions, nil
 }
 
-func filterArgAccions(allAccions []model.Symbol, filter []string) []model.Symbol {
+func filterUsaAccions(allAccions []model.Symbol, filter []string) []model.Symbol {
 	var result []model.Symbol
 
-	// Convertir el filtro a mapa para búsqueda rápida
 	filterMap := make(map[string]bool)
 	for _, s := range filter {
 		filterMap[s] = true
 	}
 
-	// Filtrar acciones
 	for _, accion := range allAccions {
 		if filterMap[accion.Symbol] {
 			result = append(result, accion)

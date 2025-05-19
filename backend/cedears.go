@@ -2,15 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"finance-app/model"
 	"fmt"
 	"log"
 	"net/http"
 )
-
-type CedearsExtApi struct {
-	Symbol    string  `json:"symbol"`
-	LastPrice float64 `json:"c"` // Usamos el campo "c" como precio
-}
 
 func Cedears() {
 	favsCedears := []string{"AAPL", "GOOGL", "MELI", "META", "QQQ", "SPY"}
@@ -30,14 +26,14 @@ func Cedears() {
 	fmt.Printf("\nTotal: %d acciones\n", len(filterCedears))
 }
 
-func getCedearsExtApi() ([]CedearsExtApi, error) {
+func getCedearsExtApi() ([]model.Symbol, error) {
 	resp, err := http.Get("https://data912.com/live/arg_cedears")
 	if err != nil {
 		return nil, fmt.Errorf("error al conectar con la API: %w", err)
 	}
 	defer resp.Body.Close()
 
-	var cedears []CedearsExtApi
+	var cedears []model.Symbol
 	if err := json.NewDecoder(resp.Body).Decode(&cedears); err != nil {
 		return nil, fmt.Errorf("error decodificando respuesta: %w", err)
 	}
@@ -45,8 +41,8 @@ func getCedearsExtApi() ([]CedearsExtApi, error) {
 	return cedears, nil
 }
 
-func filterCedears(allCedears []CedearsExtApi, filter []string) []CedearsExtApi {
-	var result []CedearsExtApi
+func filterCedears(allCedears []model.Symbol, filter []string) []model.Symbol {
+	var result []model.Symbol
 
 	filterMap := make(map[string]bool)
 	for _, s := range filter {
