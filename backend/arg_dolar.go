@@ -11,10 +11,10 @@ import (
 func ArgDolar() {
 	argDolars, err := getArgDolar()
 	if err != nil {
-		log.Fatal("Error obteniendo datos de la API:", err)
+		log.Fatal("Error obteniendo datos de la API: ", err)
 	}
 
-	fmt.Println("=== DÓLARES ===")
+	fmt.Printf("=== DÓLARES ===\n")
 	for _, dolar := range argDolars {
 		fmt.Printf("%s: Compra: $%.2f  Venta: $%.2f\n", dolar.Nombre, dolar.Compra, dolar.Venta)
 	}

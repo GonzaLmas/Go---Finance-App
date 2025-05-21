@@ -1,8 +1,12 @@
 package main
 
 func main() {
-	ArgAccions()
-	Cedears()
-	UsaAccions()
-	ArgDolar()
+	// ArgAccionsAdr()
+	ArgInflacion()
+	// ArgDolar()
+	// ArgDolarHistorico()
+	//ArgLetras()
+	// Cedears()
+	// Cripto()
+	// UsaAccions()
 }

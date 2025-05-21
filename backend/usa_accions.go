@@ -18,7 +18,7 @@ func UsaAccions() {
 
 	filterAccions := filterUsaAccions(accions, favsAccions)
 
-	fmt.Println("=== USA ACCIONS ===")
+	fmt.Printf("=== USA ACCIONS ===\n")
 	for _, accion := range filterAccions {
 		fmt.Printf("%-6s $%.2f\n", accion.Symbol, accion.LastPrice)
 	}

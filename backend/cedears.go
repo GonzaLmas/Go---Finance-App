@@ -9,7 +9,7 @@ import (
 )
 
 func Cedears() {
-	favsCedears := []string{"AAPL", "GOOGL", "MELI", "META", "QQQ", "SPY"}
+	favsCedears := []string{"AAPL", "AMZN", "GOOGL", "MELI", "META", "MSFT", "NVDA", "TSLA", "QQQ", "SPY"}
 
 	cedears, err := getCedearsExtApi()
 	if err != nil {
@@ -18,7 +18,7 @@ func Cedears() {
 
 	filterCedears := filterCedears(cedears, favsCedears)
 
-	fmt.Println("=== CEDEARS ===")
+	fmt.Printf("=== CEDEARS ===\n")
 	for _, cedear := range filterCedears {
 		fmt.Printf("%-6s $%.2f\n", cedear.Symbol, cedear.LastPrice)
 	}
