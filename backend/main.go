@@ -10,12 +10,12 @@ func main() {
 	http.HandleFunc("/cedears", handler.HandlerCedears)
 	http.HandleFunc("/adr", handler.HandlerAdr)
 	http.HandleFunc("/letras", handler.HandlerLetras)
+	http.HandleFunc("/usaacciones", handler.HandlerUsaActions)
+	http.HandleFunc("/cripto", handler.HandlerCripto)
 
-	// Servir archivos estáticos (HTML, JS, CSS desde carpeta frontend)
 	fs := http.FileServer(http.Dir("../frontend"))
 	http.Handle("/", fs)
 
-	// Levantar el servidor
-	log.Println("Servidor iniciado en http://localhost:5500")
-	log.Fatal(http.ListenAndServe(":5500", nil))
+	log.Println("Servidor iniciado en http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
