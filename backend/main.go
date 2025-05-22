@@ -9,6 +9,7 @@ import (
 func main() {
 	http.HandleFunc("/cedears", handler.HandlerCedears)
 	http.HandleFunc("/adr", handler.HandlerAdr)
+	http.HandleFunc("/letras", handler.HandlerLetras)
 
 	// Servir archivos estáticos (HTML, JS, CSS desde carpeta frontend)
 	fs := http.FileServer(http.Dir("../frontend"))
