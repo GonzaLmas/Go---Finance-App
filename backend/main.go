@@ -12,6 +12,8 @@ func main() {
 	http.HandleFunc("/letras", handler.HandlerLetras)
 	http.HandleFunc("/usaacciones", handler.HandlerUsaActions)
 	http.HandleFunc("/cripto", handler.HandlerCripto)
+	http.HandleFunc("/dolar", handler.HandlerDolar)
+	http.HandleFunc("/dolar_historico", handler.HandlerDolarHistorico)
 
 	fs := http.FileServer(http.Dir("../frontend"))
 	http.Handle("/", fs)
