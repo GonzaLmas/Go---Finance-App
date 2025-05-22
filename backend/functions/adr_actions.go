@@ -1,31 +1,13 @@
-package main
+package functions
 
 import (
 	"encoding/json"
 	"finance-app/model"
 	"fmt"
-	"log"
 	"net/http"
 )
 
-func ArgAccionsAdr() {
-	favsArgAccions := []string{"BBAR", "BMA", "GGAL", "LOMA", "PAM", "YPF"}
-
-	accions, err := getArgAccionsExtApi()
-	if err != nil {
-		log.Fatal("Error obteniendo datos de la API: ", err)
-	}
-
-	filterAccions := filterArgAccions(accions, favsArgAccions)
-
-	fmt.Printf("=== ACCIONES ===\n")
-	for _, accion := range filterAccions {
-		fmt.Printf("%-6s $%.2f\n", accion.Symbol, accion.LastPrice)
-	}
-	fmt.Printf("\nTotal: %d acciones\n", len(filterAccions))
-}
-
-func getArgAccionsExtApi() ([]model.Symbol, error) {
+func GetArgAccionsExtApi() ([]model.Symbol, error) {
 	resp, err := http.Get("https://data912.com/live/usa_adrs")
 	if err != nil {
 		return nil, fmt.Errorf("error al conectar con la API: %w", err)
@@ -40,7 +22,7 @@ func getArgAccionsExtApi() ([]model.Symbol, error) {
 	return accions, nil
 }
 
-func filterArgAccions(allAccions []model.Symbol, filter []string) []model.Symbol {
+func FilterArgAccions(allAccions []model.Symbol, filter []string) []model.Symbol {
 	var result []model.Symbol
 
 	filterMap := make(map[string]bool)
