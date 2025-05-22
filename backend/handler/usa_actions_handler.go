@@ -8,7 +8,7 @@ import (
 )
 
 func HandlerUsaActions(w http.ResponseWriter, r *http.Request) {
-	favsAccions := []string{"AAPL", "GOOGL", "MELI", "META", "QQQ", "SPY"}
+	favsAccions := []string{"AAPL", "AMZN", "GOOGL", "MELI", "META", "MSFT", "NVDA", "TSLA", "QQQ", "SPY"}
 
 	accions, err := functions.GetUsaAccionsExtApi()
 	if err != nil {

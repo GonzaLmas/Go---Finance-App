@@ -5,6 +5,7 @@ import (
 	"finance-app/model"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 func GetUsaAccionsExtApi() ([]model.Symbol, error) {
@@ -27,11 +28,11 @@ func FilterUsaAccions(allAccions []model.Symbol, filter []string) []model.Symbol
 
 	filterMap := make(map[string]bool)
 	for _, s := range filter {
-		filterMap[s] = true
+		filterMap[strings.ToUpper(s)] = true
 	}
 
 	for _, accion := range allAccions {
-		if filterMap[accion.Symbol] {
+		if filterMap[strings.ToUpper(accion.Symbol)] {
 			result = append(result, accion)
 		}
 	}

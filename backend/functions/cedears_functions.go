@@ -5,6 +5,7 @@ import (
 	"finance-app/model"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 func GetCedearsExtApi() ([]model.Symbol, error) {
@@ -27,11 +28,11 @@ func FilterCedears(allCedears []model.Symbol, filter []string) []model.Symbol {
 
 	filterMap := make(map[string]bool)
 	for _, s := range filter {
-		filterMap[s] = true
+		filterMap[strings.ToUpper(s)] = true
 	}
 
 	for _, cedear := range allCedears {
-		if filterMap[cedear.Symbol] {
+		if filterMap[strings.ToUpper(cedear.Symbol)] {
 			result = append(result, cedear)
 		}
 	}
