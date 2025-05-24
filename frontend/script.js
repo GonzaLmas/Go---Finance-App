@@ -3,8 +3,23 @@ document.querySelectorAll('.grid-button').forEach(button => {
         const tablaContainer = document.getElementById('tablaResultados');
         const buttonId = this.id.replace('btn', '').toLowerCase();
         const loadingId = `loading-${buttonId}`;
+        const buttonText = this.textContent.trim();
+        const tablaId = `tabla-${buttonId}`;
         
-        // Mostrar loading
+        const tablasExistentes = document.querySelectorAll('.tabla-wrapper');
+        let tablaExistente = null;
+        
+        tablasExistentes.forEach(tabla => {
+            const titulo = tabla.querySelector('h3.tabla-titulo');
+            if (titulo && titulo.textContent.trim() === buttonText) {
+                tablaExistente = tabla;
+            }
+        });
+        
+        if (tablaExistente) {
+            tablaContainer.removeChild(tablaExistente);
+        }
+        
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'loading';
         loadingDiv.textContent = 'Cargando datos...';
@@ -12,68 +27,63 @@ document.querySelectorAll('.grid-button').forEach(button => {
         tablaContainer.appendChild(loadingDiv);
         
         const endpoint = `/${buttonId}`;
-        const buttonText = this.textContent.trim();
         
-       fetch(endpoint)
-    .then(response => {
-        if (!response.ok) throw new Error(`Error ${response.status}`);
-        return response.json();
-    })
-    .then(data => {
-        if (!data) throw new Error("No se recibieron datos");
-        
-        // Eliminar el loading
-        const loadingToRemove = document.getElementById(loadingId);
-        if (loadingToRemove) loadingToRemove.remove();
-        
-        // Determinar qué tipo de tabla mostrar
-        if (buttonText.includes('DÓLAR') && !buttonText.includes('HISTÓRICO')) {
-            crearTablaDolar(data, buttonText);
-        } else if (buttonText.includes('HISTÓRICO')) {
-            crearTablaDolarHistorico(data, buttonText);
-        } else if (endpoint.includes('/coinbase')) { // Nueva condición para Coinbase
-            crearTablaCoinbase(data, buttonText);
-        } else {
-            crearTablaInstrumentos(data, buttonText);
-        }
-        
-        // Limitar a 9 tablas (3 filas de 3)
-        const tablas = document.querySelectorAll('.tabla-wrapper');
-        if (tablas.length > 9) {
-            tablaContainer.removeChild(tablas[tablas.length - 1]);
-        }
-    })
-    .catch(error => {
-        const loadingToReplace = document.getElementById(loadingId);
-        if (loadingToReplace) {
-            loadingToReplace.className = 'error';
-            loadingToReplace.textContent = `Error: ${error.message}`;
-        }
-        console.error('Error:', error);
-    });
+        fetch(endpoint)
+            .then(response => {
+                if (!response.ok) throw new Error(`Error ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (!data) throw new Error("No se recibieron datos");
+                
+                // Eliminar loading
+                const loadingToRemove = document.getElementById(loadingId);
+                if (loadingToRemove) loadingToRemove.remove();
+                
+                // Crear nueva tabla (siempre)
+                if (buttonText.includes('DÓLAR') && !buttonText.includes('HISTÓRICO')) {
+                    crearTablaDolar(data, buttonText, tablaId);
+                } else if (buttonText.includes('HISTÓRICO')) {
+                    crearTablaDolarHistorico(data, buttonText, tablaId);
+                } else if (endpoint.includes('/coinbase')) {
+                    crearTablaCoinbase(data, buttonText, tablaId);
+                } else {
+                    crearTablaInstrumentos(data, buttonText, tablaId);
+                }
+                
+                const tablas = document.querySelectorAll('.tabla-wrapper');
+                if (tablas.length > 9) {
+                    tablaContainer.removeChild(tablas[tablas.length - 1]);
+                }
+            })
+            .catch(error => {
+                const loadingToReplace = document.getElementById(loadingId);
+                if (loadingToReplace) {
+                    loadingToReplace.className = 'error';
+                    loadingToReplace.textContent = `Error: ${error.message}`;
+                }
+                console.error('Error:', error);
+            });
     });
 });
 
-function crearTablaInstrumentos(data, titulo) {
+function crearTablaInstrumentos(data, titulo, tablaId) {
     const tablaContainer = document.getElementById('tablaResultados');
     const tablaWrapper = document.createElement('div');
     tablaWrapper.className = 'tabla-wrapper';
+    tablaWrapper.id = tablaId;
     
-    // Título
     const tituloElement = document.createElement('h3');
     tituloElement.className = 'tabla-titulo';
     tituloElement.textContent = titulo;
     tablaWrapper.appendChild(tituloElement);
     
-    // Contenedor para scroll
     const tableContainer = document.createElement('div');
     tableContainer.className = 'data-table-container';
     
-    // Tabla
     const table = document.createElement('table');
     table.className = 'data-table';
     
-    // Encabezados
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     ['Instrumento', 'Precio'].forEach(texto => {
@@ -84,19 +94,16 @@ function crearTablaInstrumentos(data, titulo) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
-    // Cuerpo
     const tbody = document.createElement('tbody');
     const datos = Array.isArray(data) ? data : [data];
     
     datos.slice(0, 10).forEach(item => {
         const row = document.createElement('tr');
         
-        // Instrumento
         const tdInstrumento = document.createElement('td');
         tdInstrumento.textContent = item.symbol || item.ticker || item.instrumento || 'N/A';
         row.appendChild(tdInstrumento);
         
-        // Precio
         const tdPrecio = document.createElement('td');
         tdPrecio.className = 'price-cell';
         const precio = item.c || item.price || item.precio || item.value;
@@ -106,7 +113,6 @@ function crearTablaInstrumentos(data, titulo) {
         tbody.appendChild(row);
     });
     
-    // Ver más
     if (datos.length > 10) {
         const row = document.createElement('tr');
         row.className = 'ver-mas-row';
@@ -147,26 +153,23 @@ function crearTablaInstrumentos(data, titulo) {
     tablaContainer.insertBefore(tablaWrapper, tablaContainer.firstChild);
 }
 
-function crearTablaDolar(data, titulo) {
+function crearTablaDolar(data, titulo, tablaId) {
     const tablaContainer = document.getElementById('tablaResultados');
     const tablaWrapper = document.createElement('div');
     tablaWrapper.className = 'tabla-wrapper';
+    tablaWrapper.id = tablaId;
     
-    // Título
     const tituloElement = document.createElement('h3');
     tituloElement.className = 'tabla-titulo';
     tituloElement.textContent = titulo;
     tablaWrapper.appendChild(tituloElement);
     
-    // Contenedor para scroll
     const tableContainer = document.createElement('div');
     tableContainer.className = 'data-table-container';
     
-    // Tabla
     const table = document.createElement('table');
     table.className = 'data-table';
     
-    // Encabezados
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     ['Tipo', 'Compra', 'Venta'].forEach(texto => {
@@ -177,25 +180,21 @@ function crearTablaDolar(data, titulo) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
-    // Cuerpo
     const tbody = document.createElement('tbody');
     const datos = Array.isArray(data) ? data : [data];
     
     datos.forEach(item => {
         const row = document.createElement('tr');
         
-        // Tipo
         const tdTipo = document.createElement('td');
         tdTipo.textContent = item.nombre || item.casa || 'N/A';
         row.appendChild(tdTipo);
         
-        // Compra
         const tdCompra = document.createElement('td');
         tdCompra.className = 'price-cell';
         tdCompra.textContent = item.compra !== undefined ? `$${item.compra.toFixed(2)}` : 'N/A';
         row.appendChild(tdCompra);
         
-        // Venta
         const tdVenta = document.createElement('td');
         tdVenta.className = 'price-cell';
         tdVenta.textContent = item.venta !== undefined ? `$${item.venta.toFixed(2)}` : 'N/A';
@@ -210,22 +209,21 @@ function crearTablaDolar(data, titulo) {
     tablaContainer.insertBefore(tablaWrapper, tablaContainer.firstChild);
 }
 
-function crearTablaCoinbase(data, titulo) {
+function crearTablaCoinbase(data, titulo, tablaId) {
     const tablaContainer = document.getElementById('tablaResultados');
     const tablaWrapper = document.createElement('div');
     tablaWrapper.className = 'tabla-wrapper';
+    tablaWrapper.id = tablaId;
     
-    // Título
+    // Resto del código de la función original...
     const tituloElement = document.createElement('h3');
     tituloElement.className = 'tabla-titulo';
     tituloElement.textContent = titulo;
     tablaWrapper.appendChild(tituloElement);
     
-    // Tabla
     const table = document.createElement('table');
     table.className = 'data-table';
     
-    // Encabezados (SOLO 2 COLUMNAS: CRIPTO | PRECIO)
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     ['Cripto', 'Precio (USD)'].forEach(texto => {
@@ -236,19 +234,16 @@ function crearTablaCoinbase(data, titulo) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
-    // Cuerpo
     const tbody = document.createElement('tbody');
     const datos = Array.isArray(data) ? data : [data];
     
     datos.forEach(item => {
         const row = document.createElement('tr');
         
-        // Columna 1: Nombre de la cripto (ej: "BTC")
         const tdCripto = document.createElement('td');
-        tdCripto.textContent = item.base || 'N/A'; // Solo muestra "BTC", "ETH", etc.
+        tdCripto.textContent = item.base || 'N/A';
         row.appendChild(tdCripto);
         
-        // Columna 2: Precio en dólares
         const tdPrecio = document.createElement('td');
         tdPrecio.className = 'price-cell';
         const precio = item.amount ? `$${parseFloat(item.amount).toFixed(2)}` : 'N/A';
@@ -262,66 +257,3 @@ function crearTablaCoinbase(data, titulo) {
     tablaWrapper.appendChild(table);
     tablaContainer.insertBefore(tablaWrapper, tablaContainer.firstChild);
 }
-
-// function crearTablaDolarHistorico(data, titulo) {
-//     const tablaContainer = document.getElementById('tablaResultados');
-//     const tablaWrapper = document.createElement('div');
-//     tablaWrapper.className = 'tabla-wrapper';
-    
-//     // Título
-//     const tituloElement = document.createElement('h3');
-//     tituloElement.className = 'tabla-titulo';
-//     tituloElement.textContent = titulo;
-//     tablaWrapper.appendChild(tituloElement);
-    
-//     // Contenedor para scroll
-//     const tableContainer = document.createElement('div');
-//     tableContainer.className = 'data-table-container';
-    
-//     // Tabla
-//     const table = document.createElement('table');
-//     table.className = 'data-table';
-    
-//     // Encabezados
-//     const thead = document.createElement('thead');
-//     const headerRow = document.createElement('tr');
-//     ['Fecha', 'Valor'].forEach(texto => {
-//         const th = document.createElement('th');
-//         th.textContent = texto;
-//         headerRow.appendChild(th);
-//     });
-//     thead.appendChild(headerRow);
-//     table.appendChild(thead);
-    
-//     // Cuerpo
-//     const tbody = document.createElement('tbody');
-//     const datos = Array.isArray(data) ? data : [data];
-    
-//     datos.forEach(item => {
-//         const row = document.createElement('tr');
-        
-//         // Fecha
-//         const tdFecha = document.createElement('td');
-//         if (item.fecha) {
-//             const fecha = new Date(item.fecha);
-//             tdFecha.textContent = fecha.toLocaleDateString();
-//         } else {
-//             tdFecha.textContent = 'N/A';
-//         }
-//         row.appendChild(tdFecha);
-        
-//         // Valor
-//         const tdValor = document.createElement('td');
-//         tdValor.className = 'price-cell';
-//         const valor = item.valor || item.precio || item.c;
-//         tdValor.textContent = valor !== undefined ? `$${parseFloat(valor).toFixed(2)}` : 'N/A';
-//         row.appendChild(tdValor);
-        
-//         tbody.appendChild(row);
-//     });
-    
-//     table.appendChild(tbody);
-//     tableContainer.appendChild(table);
-//     tablaWrapper.appendChild(tableContainer);
-//     tablaContainer.insertBefore(tablaWrapper, tablaContainer.firstChild);
-// }

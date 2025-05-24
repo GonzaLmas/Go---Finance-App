@@ -20,7 +20,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080" // fallback local
+		port = "8080"
 	}
 
 	log.Println("Servidor iniciado en http://localhost:" + port)
