@@ -3,13 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"finance-app/functions"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func HandlerCripto(w http.ResponseWriter, r *http.Request) {
-	favsCripto := []string{"BTCUSDT", "ETHUSDT"}
+	favsCripto := []string{"BTC-USD", "ETH-USD"}
 
 	criptos, err := functions.GetCriptoExtApi(favsCripto)
 	if err != nil {
@@ -18,17 +19,16 @@ func HandlerCripto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Convertir los datos al formato adecuado para la respuesta
 	var response []map[string]interface{}
 	for _, cripto := range criptos {
-		priceFloat, err := strconv.ParseFloat(cripto.Price, 64)
+		priceFloat, err := strconv.ParseFloat(cripto.Amount, 64)
 		if err != nil {
-			log.Printf("Error al convertir el precio de %s: %v", cripto.Symbol, err)
+			log.Printf("Error al convertir el precio de %s: %v", cripto.Base, err)
 			continue
 		}
 
 		response = append(response, map[string]interface{}{
-			"symbol": cripto.Symbol,
+			"symbol": fmt.Sprintf("%s", cripto.Base), // Ej: "BTC-USD"
 			"price":  priceFloat,
 		})
 	}

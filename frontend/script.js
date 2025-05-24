@@ -14,41 +14,43 @@ document.querySelectorAll('.grid-button').forEach(button => {
         const endpoint = `/${buttonId}`;
         const buttonText = this.textContent.trim();
         
-        fetch(endpoint)
-            .then(response => {
-                if (!response.ok) throw new Error(`Error ${response.status}`);
-                return response.json();
-            })
-            .then(data => {
-                if (!data) throw new Error("No se recibieron datos");
-                
-                // Eliminar el loading
-                const loadingToRemove = document.getElementById(loadingId);
-                if (loadingToRemove) loadingToRemove.remove();
-                
-                // Determinar qué tipo de tabla mostrar
-                if (buttonText.includes('DÓLAR') && !buttonText.includes('HISTÓRICO')) {
-                    crearTablaDolar(data, buttonText);
-                } else if (buttonText.includes('HISTÓRICO')) {
-                    crearTablaDolarHistorico(data, buttonText);
-                } else {
-                    crearTablaInstrumentos(data, buttonText);
-                }
-                
-                // Limitar a 9 tablas (3 filas de 3)
-                const tablas = document.querySelectorAll('.tabla-wrapper');
-                if (tablas.length > 9) {
-                    tablaContainer.removeChild(tablas[tablas.length - 1]);
-                }
-            })
-            .catch(error => {
-                const loadingToReplace = document.getElementById(loadingId);
-                if (loadingToReplace) {
-                    loadingToReplace.className = 'error';
-                    loadingToReplace.textContent = `Error: ${error.message}`;
-                }
-                console.error('Error:', error);
-            });
+       fetch(endpoint)
+    .then(response => {
+        if (!response.ok) throw new Error(`Error ${response.status}`);
+        return response.json();
+    })
+    .then(data => {
+        if (!data) throw new Error("No se recibieron datos");
+        
+        // Eliminar el loading
+        const loadingToRemove = document.getElementById(loadingId);
+        if (loadingToRemove) loadingToRemove.remove();
+        
+        // Determinar qué tipo de tabla mostrar
+        if (buttonText.includes('DÓLAR') && !buttonText.includes('HISTÓRICO')) {
+            crearTablaDolar(data, buttonText);
+        } else if (buttonText.includes('HISTÓRICO')) {
+            crearTablaDolarHistorico(data, buttonText);
+        } else if (endpoint.includes('/coinbase')) { // Nueva condición para Coinbase
+            crearTablaCoinbase(data, buttonText);
+        } else {
+            crearTablaInstrumentos(data, buttonText);
+        }
+        
+        // Limitar a 9 tablas (3 filas de 3)
+        const tablas = document.querySelectorAll('.tabla-wrapper');
+        if (tablas.length > 9) {
+            tablaContainer.removeChild(tablas[tablas.length - 1]);
+        }
+    })
+    .catch(error => {
+        const loadingToReplace = document.getElementById(loadingId);
+        if (loadingToReplace) {
+            loadingToReplace.className = 'error';
+            loadingToReplace.textContent = `Error: ${error.message}`;
+        }
+        console.error('Error:', error);
+    });
     });
 });
 
@@ -208,7 +210,7 @@ function crearTablaDolar(data, titulo) {
     tablaContainer.insertBefore(tablaWrapper, tablaContainer.firstChild);
 }
 
-function crearTablaDolarHistorico(data, titulo) {
+function crearTablaCoinbase(data, titulo) {
     const tablaContainer = document.getElementById('tablaResultados');
     const tablaWrapper = document.createElement('div');
     tablaWrapper.className = 'tabla-wrapper';
@@ -219,18 +221,14 @@ function crearTablaDolarHistorico(data, titulo) {
     tituloElement.textContent = titulo;
     tablaWrapper.appendChild(tituloElement);
     
-    // Contenedor para scroll
-    const tableContainer = document.createElement('div');
-    tableContainer.className = 'data-table-container';
-    
     // Tabla
     const table = document.createElement('table');
     table.className = 'data-table';
     
-    // Encabezados
+    // Encabezados (SOLO 2 COLUMNAS: CRIPTO | PRECIO)
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-    ['Fecha', 'Valor'].forEach(texto => {
+    ['Cripto', 'Precio (USD)'].forEach(texto => {
         const th = document.createElement('th');
         th.textContent = texto;
         headerRow.appendChild(th);
@@ -245,28 +243,85 @@ function crearTablaDolarHistorico(data, titulo) {
     datos.forEach(item => {
         const row = document.createElement('tr');
         
-        // Fecha
-        const tdFecha = document.createElement('td');
-        if (item.fecha) {
-            const fecha = new Date(item.fecha);
-            tdFecha.textContent = fecha.toLocaleDateString();
-        } else {
-            tdFecha.textContent = 'N/A';
-        }
-        row.appendChild(tdFecha);
+        // Columna 1: Nombre de la cripto (ej: "BTC")
+        const tdCripto = document.createElement('td');
+        tdCripto.textContent = item.base || 'N/A'; // Solo muestra "BTC", "ETH", etc.
+        row.appendChild(tdCripto);
         
-        // Valor
-        const tdValor = document.createElement('td');
-        tdValor.className = 'price-cell';
-        const valor = item.valor || item.precio || item.c;
-        tdValor.textContent = valor !== undefined ? `$${parseFloat(valor).toFixed(2)}` : 'N/A';
-        row.appendChild(tdValor);
+        // Columna 2: Precio en dólares
+        const tdPrecio = document.createElement('td');
+        tdPrecio.className = 'price-cell';
+        const precio = item.amount ? `$${parseFloat(item.amount).toFixed(2)}` : 'N/A';
+        tdPrecio.textContent = precio;
+        row.appendChild(tdPrecio);
         
         tbody.appendChild(row);
     });
     
     table.appendChild(tbody);
-    tableContainer.appendChild(table);
-    tablaWrapper.appendChild(tableContainer);
+    tablaWrapper.appendChild(table);
     tablaContainer.insertBefore(tablaWrapper, tablaContainer.firstChild);
 }
+
+// function crearTablaDolarHistorico(data, titulo) {
+//     const tablaContainer = document.getElementById('tablaResultados');
+//     const tablaWrapper = document.createElement('div');
+//     tablaWrapper.className = 'tabla-wrapper';
+    
+//     // Título
+//     const tituloElement = document.createElement('h3');
+//     tituloElement.className = 'tabla-titulo';
+//     tituloElement.textContent = titulo;
+//     tablaWrapper.appendChild(tituloElement);
+    
+//     // Contenedor para scroll
+//     const tableContainer = document.createElement('div');
+//     tableContainer.className = 'data-table-container';
+    
+//     // Tabla
+//     const table = document.createElement('table');
+//     table.className = 'data-table';
+    
+//     // Encabezados
+//     const thead = document.createElement('thead');
+//     const headerRow = document.createElement('tr');
+//     ['Fecha', 'Valor'].forEach(texto => {
+//         const th = document.createElement('th');
+//         th.textContent = texto;
+//         headerRow.appendChild(th);
+//     });
+//     thead.appendChild(headerRow);
+//     table.appendChild(thead);
+    
+//     // Cuerpo
+//     const tbody = document.createElement('tbody');
+//     const datos = Array.isArray(data) ? data : [data];
+    
+//     datos.forEach(item => {
+//         const row = document.createElement('tr');
+        
+//         // Fecha
+//         const tdFecha = document.createElement('td');
+//         if (item.fecha) {
+//             const fecha = new Date(item.fecha);
+//             tdFecha.textContent = fecha.toLocaleDateString();
+//         } else {
+//             tdFecha.textContent = 'N/A';
+//         }
+//         row.appendChild(tdFecha);
+        
+//         // Valor
+//         const tdValor = document.createElement('td');
+//         tdValor.className = 'price-cell';
+//         const valor = item.valor || item.precio || item.c;
+//         tdValor.textContent = valor !== undefined ? `$${parseFloat(valor).toFixed(2)}` : 'N/A';
+//         row.appendChild(tdValor);
+        
+//         tbody.appendChild(row);
+//     });
+    
+//     table.appendChild(tbody);
+//     tableContainer.appendChild(table);
+//     tablaWrapper.appendChild(tableContainer);
+//     tablaContainer.insertBefore(tablaWrapper, tablaContainer.firstChild);
+// }
