@@ -4,6 +4,7 @@ import (
 	"finance-app/handler"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -17,6 +18,11 @@ func main() {
 	fs := http.FileServer(http.Dir("../frontend"))
 	http.Handle("/", fs)
 
-	log.Println("Servidor iniciado en http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // fallback local
+	}
+
+	log.Println("Servidor iniciado en http://localhost:" + port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
